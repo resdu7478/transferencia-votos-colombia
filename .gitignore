@@ -1,0 +1,3 @@
+# Keep source spreadsheets and local tooling out of the published site
+*.xlsx
+.claude/
