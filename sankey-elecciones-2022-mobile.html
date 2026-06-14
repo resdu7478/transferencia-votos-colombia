@@ -20,21 +20,21 @@
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:"Segoe UI",Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
-  header{padding:22px 28px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  header{padding:14px 16px 4px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .yearnav{display:flex;gap:8px;flex-shrink:0}
   .yearnav a{display:inline-block;padding:9px 20px;border-radius:999px;border:1px solid var(--line);
     background:var(--panel);color:var(--muted);font-weight:700;font-size:15px;text-decoration:none}
   .yearnav a:hover{border-color:#5b9bff;color:var(--ink)}
   .yearnav a.cur{background:#5b9bff;border-color:#5b9bff;color:#fff;pointer-events:none}
-  h1{margin:0 0 4px;font-size:20px;font-weight:700}
+  h1{margin:0 0 2px;font-size:15px;line-height:1.25;font-weight:700}
   .sub{color:var(--muted);font-size:13px;max-width:900px;line-height:1.5}
-  .wrap{padding:8px 16px 40px;overflow-x:auto}
-  .legend{display:flex;gap:18px;flex-wrap:wrap;padding:6px 28px 4px;font-size:12px;color:var(--muted)}
+  .wrap{padding:6px 12px 24px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:4px 16px;font-size:12.5px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
-  .banner{margin:10px 28px;padding:12px 16px;border-radius:10px;background:var(--panel);
-    border:1px solid var(--line);display:flex;gap:26px;flex-wrap:wrap;align-items:center;font-size:14px}
-  .banner b{font-size:15px}
+  .banner{margin:8px 16px;padding:8px 12px;border-radius:10px;background:var(--panel);
+    border:1px solid var(--line);display:flex;gap:4px 10px;flex-wrap:wrap;align-items:center;font-size:12.5px}
+  .banner b{font-size:12.5px}
   .pill{padding:3px 10px;border-radius:999px;font-weight:700;font-size:13px}
   .cards{display:flex;gap:12px;flex-wrap:wrap;margin:0 28px 6px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:190px}
@@ -42,8 +42,12 @@
   .card .n{font-size:18px;font-weight:700;margin-top:2px}
   .card .d{font-size:12px;margin-top:3px}
   .pos{color:#46c46a}.neg{color:#ff6b6b}
-  svg{display:block;margin:4px auto 0;max-width:100%;width:100%;height:auto}
-  .wrap{overflow-x:hidden}
+  svg{display:block;margin:4px auto 0}
+  #chart{width:100%;height:auto;max-width:100%}
+  @media (orientation:portrait){
+    /* lo suficientemente grande para leerse; se desliza en horizontal */
+    #chart{height:min(58vh,540px);width:calc(min(58vh,540px) * 1.96774);max-width:none}
+  }
   .node rect{stroke:#0a0d12;stroke-width:.5px;cursor:default}
   .node text{fill:var(--ink);font-size:16px}
   .node .v{fill:var(--muted);font-size:14px}
@@ -68,11 +72,11 @@
   .pctbox .pc{color:var(--muted);font-size:14px;font-weight:700;text-shadow:0 1px 2px #000}
   .rotatehint{display:none}
   @media (orientation:portrait){
-    .rotatehint{display:flex;align-items:center;gap:8px;margin:8px 16px 0;padding:10px 14px;
-      border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--muted);font-size:13px}
+    .rotatehint{display:flex;align-items:center;gap:8px;margin:6px 16px 0;padding:7px 12px;
+      border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--muted);font-size:12px;line-height:1.35}
   }
   .dest-stat{font-size:11.5px}
-  .controls{display:flex;gap:10px;margin:6px 28px 0}
+  .controls{display:flex;gap:10px;margin:8px 16px 0}
   button{background:#222b39;color:var(--ink);border:1px solid var(--line);border-radius:8px;
     padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit}
   button:hover{background:#2c3a4d}
@@ -82,7 +86,7 @@
 </head>
 <body>
 <header>
-  <h1>Elecciones presidenciales Colombia 2022 — Transferencia de votos R1 → R2</h1>
+  <h1>Presidenciales Colombia 2022 · Votos R1 → R2</h1>
   <nav class="yearnav" aria-label="Cambiar de año">
     <a class="cur" aria-current="page">2022</a>
     <a href="sankey-elecciones-2026.html">2026 →</a>
@@ -90,14 +94,14 @@
 </header>
 
 <div class="legend">
-  <span><i class="sw" style="background:var(--petro)"></i>→ Gustavo Petro</span>
-  <span><i class="sw" style="background:var(--hern)"></i>→ Rodolfo Hernández</span>
-  <span><i class="sw" style="background:var(--blanco)"></i>→ Blanco / Nulo</span>
+  <span><i class="sw" style="background:var(--petro)"></i>→ Petro</span>
+  <span><i class="sw" style="background:var(--hern)"></i>→ Hernández</span>
+  <span><i class="sw" style="background:var(--blanco)"></i>→ Blanco/Nulo</span>
 </div>
 
 <div class="banner" id="banner"></div>
 <div class="controls"><button id="reset">↺ Restaurar supuestos originales</button></div>
-<div class="rotatehint">📱↻ Gira tu teléfono (horizontal) para ver mejor el diagrama</div>
+<div class="rotatehint">↔ Desliza para explorar · pellizca para acercar · o gira el teléfono para verlo completo</div>
 
 <div class="wrap">
   <svg id="chart" width="1220" height="620" viewBox="0 0 1220 620" preserveAspectRatio="xMidYMid meet" aria-label="Diagrama Sankey editable de 3 columnas"></svg>
@@ -354,11 +358,11 @@ function updatePanels(e){
   const espTie = Math.abs(e[0]-e[1]) < 1, realTie = Math.abs(DEST[0].real-DEST[1].real) < 1;  // empate si <1 voto
   const b = d3.select('#banner');
   b.html('');
-  b.append('div').html(`<b>${espTie ? 'Resultado esperado (modelo):' : 'Ganador esperado (modelo):'}</b>`);
+  b.append('div').html(`<b>Esperado:</b>`);
   b.append('span').attr('class','pill')
     .style('background', espTie ? '#8a8f98' : DEST[win].color).style('color','#fff')
     .text(espTie ? 'Empate' : `${DEST[win].name.split(' ')[1]||DEST[win].name} +${fmt(margin)}`);
-  b.append('div').html(`<b>${realTie ? 'Resultado real:' : 'Ganador real:'}</b>`);
+  b.append('div').html(`<b>Real:</b>`);
   b.append('span').attr('class','pill')
     .style('background', realTie ? '#8a8f98' : DEST[realWin].color).style('color','#fff')
     .text(realTie ? 'Empate' : `${DEST[realWin].name.split(' ')[1]||DEST[realWin].name} +${fmt(Math.abs(DEST[0].real-DEST[1].real))}`);
