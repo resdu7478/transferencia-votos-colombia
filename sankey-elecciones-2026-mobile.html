@@ -65,11 +65,26 @@
   .pctbox{width:64px;height:30px;overflow:visible}
   .pctbox .row{display:flex;align-items:center;justify-content:center;gap:2px;height:100%}
   .pctbox input{width:40px;height:100%;border-radius:5px;border:1.6px solid var(--line);
-    background:#0c1016;color:var(--ink);font-size:15px;font-weight:700;text-align:center;
-    font-family:inherit;padding:0;outline:none}
+    background:#0c1016;color:var(--ink);font-size:16px;font-weight:700;text-align:center;
+    font-family:inherit;padding:0;outline:none;cursor:pointer}
   .pctbox input:focus{border-color:#5b9bff}
   .pctbox input::-webkit-inner-spin-button,.pctbox input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
   .pctbox .pc{color:var(--muted);font-size:14px;font-weight:700;text-shadow:0 1px 2px #000}
+  /* barra de edición móvil (slider, reemplaza el teclado en las cajas de %) */
+  #editbar{position:fixed;left:0;right:0;bottom:0;z-index:60;transform:translateY(125%);
+    transition:transform .22s ease;background:var(--panel);border-top:1px solid var(--line);
+    padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom));box-shadow:0 -8px 22px rgba(0,0,0,.45)}
+  #editbar.open{transform:translateY(0)}
+  #editbar .eb-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px}
+  #editbar .eb-label{font-size:14px;font-weight:700;color:var(--ink)}
+  #editbar .eb-close{background:transparent;border:none;color:var(--muted);font-size:20px;line-height:1;padding:4px 10px;cursor:pointer}
+  #editbar .eb-row2{display:flex;align-items:center;gap:12px}
+  #editbar .eb-slider{-webkit-appearance:none;appearance:none;flex:1;height:10px;border-radius:5px;background:var(--line);outline:none}
+  #editbar .eb-slider::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#5b9bff;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  #editbar .eb-slider::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#5b9bff;border:3px solid #fff}
+  #editbar .eb-minus,#editbar .eb-plus{width:46px;height:46px;font-size:24px;font-weight:700;border-radius:12px;border:1px solid var(--line);background:#222b39;color:var(--ink);cursor:pointer}
+  #editbar .eb-minus:active,#editbar .eb-plus:active{background:#2c3a4d}
+  #editbar .eb-val{min-width:62px;text-align:right;font-size:19px;font-weight:800;color:var(--ink)}
   .rotatehint{display:none}
   @media (orientation:portrait){
     .rotatehint{display:flex;align-items:center;gap:8px;margin:6px 16px 0;padding:7px 12px;
@@ -104,6 +119,16 @@
 
 <div class="wrap">
   <svg id="chart" width="1300" height="640" viewBox="0 0 1300 640" preserveAspectRatio="xMidYMid meet" aria-label="Diagrama Sankey editable de 3 columnas"></svg>
+</div>
+
+<div id="editbar">
+  <div class="eb-row"><span class="eb-label"></span><button class="eb-close" aria-label="Cerrar">✕</button></div>
+  <div class="eb-row2">
+    <button class="eb-minus" aria-label="Restar">−</button>
+    <input class="eb-slider" type="range" min="0" max="100" step="0.1" aria-label="Ajustar porcentaje">
+    <button class="eb-plus" aria-label="Sumar">+</button>
+    <span class="eb-val"></span>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -284,12 +309,13 @@ function render(){
     .join(enter=>{ const fe=enter.append('foreignObject').attr('class','votosfield').attr('width',176).attr('height',30);
       const row=fe.append('xhtml:div').style('display','flex').style('align-items','center').style('justify-content','flex-end').style('gap','4px').style('height','100%');
       row.append('xhtml:input').attr('type','text').attr('inputmode','numeric')
-        .style('width','116px').style('height','26px').style('border','1px solid var(--line)').style('background','#0c1016').style('color','var(--ink)').style('font-family','inherit').style('font-size','15px').style('text-align','right').style('border-radius','4px').style('padding','0 4px').style('outline','none')
+        .style('width','116px').style('height','26px').style('border','1px solid var(--line)').style('background','#0c1016').style('color','var(--ink)').style('font-family','inherit').style('font-size','16px').style('text-align','right').style('border-radius','4px').style('padding','0 4px').style('outline','none')
         .on('input', function(){ SRC[vnIdx].votes = Math.max(0, parseInt(this.value.replace(/\D/g,''),10)||0); render(); })
-        .on('blur', function(){ this.value = fmt(SRC[vnIdx].votes); });   // al salir, muestra separadores de miles
+        .on('blur', function(){ this.value = fmt(SRC[vnIdx].votes); render(); });   // al salir: separadores de miles + reubica
       row.append('xhtml:span').text('votos').style('font-size','14px').style('color','var(--muted)');
       return fe; });
-  vnfo.attr('x',d=>d.x0-8-176).attr('y',d=>(d.y0+d.y1)/2+4);
+  vnfo.attr('x',d=>d.x0-8-176);  // pin vertical mientras se escribe (no salta bajo el dedo)
+  vnfo.filter(function(){ return document.activeElement!==this.querySelector('input'); }).attr('y',d=>(d.y0+d.y1)/2+4);
   vnfo.select('input').property('value', function(){ return document.activeElement===this ? this.value : fmt(SRC[vnIdx].votes); });
 
   // encabezados centrados sobre cada columna
@@ -342,13 +368,14 @@ function render(){
     .join(enter=>{ const fe=enter.append('foreignObject').attr('class','pctbox fpct').attr('width',64).attr('height',30);
       const r=fe.append('xhtml:div').attr('class','row');
       r.append('xhtml:input').attr('type','number').attr('min',0).attr('max',100).attr('step',0.1)
-        .on('input', function(ev,d){ FRAUD[d.fk]=Math.max(0,parseFloat(this.value)||0); render(); });
+        .attr('readonly',true).attr('inputmode','none')
+        .on('click', function(ev,d){ this.blur(); openEditor({kind:'fraud', fk:d.fk}); });
       r.append('xhtml:span').attr('class','pc').text('%');
       fe.attr('x',d=>d.x-32).attr('y',d=>d.y+18);
       return fe; });
   ffo.transition().duration(220).ease(d3.easeCubicOut).attr('x',d=>d.x-32).attr('y',d=>d.y+18);
   ffo.select('input').style('border-color','#c0392b').attr('title',d=>'% '+d.fk)
-    .property('value', function(d){ return document.activeElement===this ? this.value : (Math.round(FRAUD[d.fk]*10)/10); });
+    .property('value', function(d){ return Math.round(FRAUD[d.fk]*10)/10; });
 
   // % editables (sólo transfer): un escalón/step por fuente; caja en el centro vertical de su rama; ceros al fondo
   const gapStart=graph.nodes[0].x1, gapEnd=graph.nodes[N].x0;
@@ -372,8 +399,8 @@ function render(){
   const foE = fo.enter().append('foreignObject').attr('width',64).attr('height',30).attr('class','pctbox');
   const row = foE.append('xhtml:div').attr('class','row');
   row.append('xhtml:input').attr('type','number').attr('min',0).attr('max',100).attr('step',0.1)
-    .on('input', function(ev,d){ setPct(d.l.si,d.l.di, parseFloat(this.value)||0); render(); })
-    .on('blur', function(ev,d){ this.value = Math.round(SRC[d.l.si].pct[d.l.di]); });  // al salir, muestra el entero redondeado
+    .attr('readonly',true).attr('inputmode','none')
+    .on('click', function(ev,d){ this.blur(); openEditor({kind:'transfer', si:d.l.si, di:d.l.di}); });
   row.append('xhtml:span').attr('class','pc').text('%');
   const tip = d => `${SRC[d.l.si].name} → ${DEST[d.l.di].name}`;
   foE.attr('x',d=>d.x-32).attr('y',d=>d.y-15);            // posición inicial (sin animar)
@@ -383,7 +410,7 @@ function render(){
   foAll.select('div.row').attr('title', tip);
   foAll.select('input').style('border-color', d=>DEST[d.l.di].color).attr('title', tip)
     .style('background', d=>srcFill(d.l.si)).style('color', d=>textOn(srcFill(d.l.si)))
-    .property('value', function(d){ return document.activeElement===this ? this.value : Math.round(SRC[d.l.si].pct[d.l.di]); });
+    .property('value', function(d){ return Math.round(SRC[d.l.si].pct[d.l.di]); });
 
   updatePanels(e, RREAL);
 }
@@ -411,9 +438,30 @@ function updatePanels(e, RREAL){
   else             verdict.attr('class','blinkbad').html('⚠ El modelo contradice el resultado real (Posible fraude)');
 }
 
+/* ---- editor móvil: tocar una caja de % abre una barra con slider (sin teclado) ---- */
+let EDIT = null;
+const _eb = document.querySelector('#editbar');
+const _ebLabel = _eb.querySelector('.eb-label'), _ebVal = _eb.querySelector('.eb-val'), _ebSlider = _eb.querySelector('.eb-slider');
+function editorValue(){ if(!EDIT) return 0; return EDIT.kind==='transfer' ? SRC[EDIT.si].pct[EDIT.di] : (FRAUD[EDIT.fk]||0); }
+function syncEditor(){ if(!EDIT) return; const v=editorValue();
+  _ebLabel.textContent = EDIT.kind==='transfer' ? `${SRC[EDIT.si].name} → ${DEST[EDIT.di].name}`
+    : (EDIT.fk==='compra' ? 'Posible compra de votos' : 'Posible fraude en mesa');
+  _ebSlider.max = EDIT.kind==='fraud' ? 15 : 100; _ebSlider.value = v;
+  _ebVal.textContent = (Math.round(v*10)/10)+'%'; }
+function setEditorValue(v){ if(!EDIT) return; v=Math.max(0,Math.min(100,v));
+  if(EDIT.kind==='transfer') setPct(EDIT.si,EDIT.di,v); else FRAUD[EDIT.fk]=Math.round(v*10)/10;
+  render(); syncEditor(); }
+function openEditor(t){ EDIT=t; _eb.classList.add('open'); syncEditor(); }
+function closeEditor(){ EDIT=null; _eb.classList.remove('open'); }
+_ebSlider.addEventListener('input', e=> setEditorValue(parseFloat(e.target.value)||0));
+_eb.querySelector('.eb-minus').addEventListener('click', ()=> setEditorValue(editorValue()-(EDIT&&EDIT.kind==='fraud'?0.1:1)));
+_eb.querySelector('.eb-plus').addEventListener('click', ()=> setEditorValue(editorValue()+(EDIT&&EDIT.kind==='fraud'?0.1:1)));
+_eb.querySelector('.eb-close').addEventListener('click', closeEditor);
+
 d3.select('#reset').on('click', ()=>{
   SRC = ORIG.map(s=>({...s, pct:[...s.pct]}));
   FRAUD = {...FRAUD0};
+  closeEditor();
   render();
 });
 
