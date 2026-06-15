@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>
+/* Redirige a la versión móvil en pantallas pequeñas. Usa ?view=full para forzar esta versión. */
+(function(){try{
+  if(/[?&]view=full/.test(location.search))return;
+  var m=window.matchMedia('(max-width:768px)').matches||/Mobi|Android|iPhone|iPod/i.test(navigator.userAgent);
+  if(m)location.replace('movil.html'+location.search);
+}catch(e){}})();
+</script>
+<title>Elecciones 2026 · Transferencia de votos R1 → R2 (editable)</title>
+<style>
+  :root{
+    --cep:#800020; --del:#FCD116; --blanco:#7f7f7f;
+    --bg:#0f1218; --panel:#161b24; --ink:#e8edf4; --muted:#9aa7b8; --line:#27303d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  header{padding:22px 28px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .yearnav{display:flex;gap:8px;flex-shrink:0}
+  .yearnav a{display:inline-block;padding:9px 20px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel);color:var(--muted);font-weight:700;font-size:15px;text-decoration:none}
+  .yearnav a:hover{border-color:#5b9bff;color:var(--ink)}
+  .yearnav a.cur{background:#5b9bff;border-color:#5b9bff;color:#fff;pointer-events:none}
+  h1{margin:0 0 4px;font-size:20px;font-weight:700}
+  .sub{color:var(--muted);font-size:13px;max-width:900px;line-height:1.5}
+  .wrap{padding:8px 16px 40px;overflow-x:auto}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;padding:6px 28px 4px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .banner{margin:10px 28px;padding:12px 16px;border-radius:10px;background:var(--panel);
+    border:1px solid var(--line);display:flex;gap:26px;flex-wrap:wrap;align-items:center;font-size:14px}
+  .banner b{font-size:15px}
+  .pill{padding:3px 10px;border-radius:999px;font-weight:700;font-size:13px}
+  .cards{display:flex;gap:12px;flex-wrap:wrap;margin:0 28px 6px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:200px}
+  .card .t{font-size:12px;color:var(--muted)}
+  .card .n{font-size:18px;font-weight:700;margin-top:2px}
+  .card .d{font-size:12px;margin-top:3px}
+  .pos{color:#46c46a}.neg{color:#ff6b6b}
+  svg{display:block;margin:4px auto 0;max-width:100%}
+  .node rect{stroke:#0a0d12;stroke-width:.5px;cursor:default}
+  .node text{fill:var(--ink);font-size:12.5px}
+  .node .v{fill:var(--muted);font-size:11px}
+  .colhead{fill:var(--ink);font-size:12.5px;font-weight:700;opacity:.85}
+  @keyframes winglow{0%,100%{filter:drop-shadow(0 0 2px #ffd54a)}50%{filter:drop-shadow(0 0 7px #ffd54a)}}
+  @keyframes blinkbad{0%,100%{opacity:1}50%{opacity:.3}}
+  .blinkbad{color:#ff3b3b;font-weight:700;animation:blinkbad 1s ease-in-out infinite}
+  .winnode{animation:winglow 1.5s ease-in-out infinite}
+  .winpill{fill:#ffd54a;stroke:#5a4500;stroke-width:.5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+  .wintxt{fill:#3a2c00;font-size:10px;font-weight:800}
+  .flabtx{fill:#ffe3d6;font-size:10.5px;font-weight:700}
+  .flabbg{fill:rgba(10,13,18,.85);stroke:#c0392b;stroke-width:1.2}
+  .link{fill:none;stroke-opacity:.42;transition:stroke-opacity .15s}
+  .link:hover{stroke-opacity:.72}
+  .pctbox{width:52px;height:22px;overflow:visible}
+  .pctbox .row{display:flex;align-items:center;justify-content:center;gap:2px;height:100%}
+  .pctbox input{width:32px;height:100%;border-radius:5px;border:1.6px solid var(--line);
+    background:#0c1016;color:var(--ink);font-size:11.5px;font-weight:700;text-align:center;
+    font-family:inherit;padding:0;outline:none}
+  .pctbox input:focus{border-color:#5b9bff}
+  .pctbox input::-webkit-inner-spin-button,.pctbox input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  .pctbox .pc{color:var(--muted);font-size:11px;font-weight:700;text-shadow:0 1px 2px #000}
+  .controls{display:flex;gap:10px;margin:6px 28px 0}
+  button{background:#222b39;color:var(--ink);border:1px solid var(--line);border-radius:8px;
+    padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+  button:hover{background:#2c3a4d}
+  .note{color:var(--muted);font-size:12px;margin:10px 28px 0;max-width:920px;line-height:1.5}
+  a{color:#6fa8ff}
+</style>
+</head>
+<body>
+<header>
+  <h1>Elecciones presidenciales Colombia 2026 — Transferencia de votos R1 → R2</h1>
+  <nav class="yearnav" aria-label="Cambiar de año">
+    <a href="../2022/">← 2022</a>
+    <a class="cur" aria-current="page">2026</a>
+  </nav>
+</header>
+
+<div class="legend">
+  <span><i class="sw" style="background:var(--cep)"></i>→ Iván Cepeda</span>
+  <span><i class="sw" style="background:var(--del)"></i>→ Abelardo de la Espriella</span>
+  <span><i class="sw" style="background:var(--blanco)"></i>→ Blanco / Nulo</span>
+</div>
+
+<div class="banner" id="banner"></div>
+<div class="controls"><button id="reset">↺ Restaurar supuestos originales</button></div>
+
+<div class="wrap">
+  <svg id="chart" width="1300" height="640" aria-label="Diagrama Sankey editable de 3 columnas"></svg>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script>
+const fmt = n => Math.round(n).toLocaleString('es-CO');
+const DEST = [
+  {name:'Iván Cepeda',              short:'Cepeda',          real:13758024.937601082, color:'#800020'},
+  {name:'Abelardo de la Espriella', short:'De la Espriella', real:13758024.937601076, color:'#FCD116'},
+  {name:'Blanco / Nulo',            short:'Blanco/Nulo',     real:1086571.842780336,  color:'#7f7f7f'},
+];
+// pct = [% a Cepeda, % a De la Espriella, % Blanco/Nulo]
+const ORIG = [
+  {name:'Iván Cepeda',               votes:9688361,         pct:[100,0,0]},
+  {name:'Abelardo de la Espriella',  votes:10361499,        pct:[2,95,3]},
+  {name:'Paloma Valencia',           votes:1639685,         pct:[30,67,3]},
+  {name:'Fajardo / López / Otros / Blanco / Nulos', votes:2288759, pct:[45.57595012916322,51.42404987083678,3]},
+  {name:'Votos nuevos',              votes:2000000,            pct:[45.57595012916322,51.42404987083678,3]},
+];
+let SRC = ORIG.map(s => ({...s, pct:[...s.pct]}));
+const N = SRC.length;                 // nº de candidatos de 1ª vuelta
+// colores de los nodos de 1ª vuelta (orden = SRC). null = dinámico (color del destino mayoritario)
+const SRCCOLOR = [DEST[0].color, DEST[1].color, '#2f80ed', '#2e9e4f', '#9b51e0'];
+const srcFill = i => SRCCOLOR[i] ?? DEST[SRC[i].pct.indexOf(Math.max(...SRC[i].pct))].color;
+const textOn = hex => { const c=hex.replace('#',''),
+  r=parseInt(c.substr(0,2),16), g=parseInt(c.substr(2,2),16), b=parseInt(c.substr(4,2),16);
+  return (0.299*r+0.587*g+0.114*b)/255 > 0.62 ? '#0c1016' : '#fff'; };
+
+// ---- geometry: Sankey de 3 columnas (R1 → Esperado → Real) ----
+const fmtM = n => n>=1e6 ? (n/1e6).toFixed(2)+'M' : fmt(n);
+const svg = d3.select('#chart');
+const W = 1300, H = 640, M = {top:42,right:200,bottom:18,left:255};
+const innerW = W - M.left - M.right, innerH = H - M.top - M.bottom;
+const g = svg.append('g').attr('transform',`translate(${M.left},${M.top})`);
+const REAL = DEST.map(d=>d.real), R2T = DEST.reduce((a,d)=>a+d.real,0);
+
+const sankey = d3.sankey()
+  .nodeWidth(14).nodePadding(20).nodeSort(null).linkSort(null)
+  .extent([[0,0],[innerW,innerH]]);
+
+// nodos: 0..N-1 R1 · N..N+2 Esperado (Cepeda,DelaEspriella,Blanco) · N+3..N+5 Real
+const graph = { nodes: [
+  ...SRC.map(s=>({name:s.name})),
+  ...DEST.map(d=>({name:d.name})),
+  ...DEST.map(d=>({name:d.name})),
+], links: [] };
+// R1 → Esperado (flujos editables; color por destino)
+SRC.forEach((s,si)=> DEST.forEach((d,di)=>
+  graph.links.push({type:'transfer', source:si, target:N+di, si, di, color:d.color, value:1})));
+// Esperado → Real (reasignación para cuadrar con la realidad; color por origen)
+for(let i=0;i<3;i++) for(let j=0;j<3;j++)
+  graph.links.push({type:'flow', source:N+i, target:N+3+j, fi:i, fj:j, color:DEST[i].color, value:1});
+
+const linkLayer  = g.append('g');
+const nodeLayer  = g.append('g');
+const labelLayer = g.append('g');
+const headLayer  = g.append('g');
+[['1ª vuelta',0],['2ª vuelta · Esperado (modelo)',1],['2ª vuelta · Resultado real',2]].forEach(([t,c])=>
+  headLayer.append('text').attr('class','colhead').attr('data-col',c)
+    .attr('text-anchor','middle').attr('y',-22).text(t));
+const winLayer = g.append('g');
+const flowLabLayer = g.append('g');
+
+// flujo mínimo Esperado→Real: diagonal (min) + reparto de excedentes a déficits
+function flowMatrix(e, r){
+  const F=[[0,0,0],[0,0,0],[0,0,0]], sur=[], def=[];
+  for(let i=0;i<3;i++){ const d=Math.min(e[i],r[i]); F[i][i]=d; sur[i]=e[i]-d; def[i]=r[i]-d; }
+  const tot=sur.reduce((a,b)=>a+b,0);
+  if(tot>1e-9) for(let i=0;i<3;i++) if(sur[i]>1e-9)
+    for(let j=0;j<3;j++) if(def[j]>1e-9) F[i][j]+= sur[i]*def[j]/tot;
+  return F;
+}
+const grpOf = idx => idx<N ? 'src' : idx<N+3 ? 'esp' : 'real';
+
+// % de fraude editable (2026): cuántos votos del total salen de De la Espriella hacia Cepeda (compra) y Blanco (fraude).
+// Por defecto: compra (DLE esperado → Cepeda real) = 0.9% y fraude (DLE esperado → Blanco/Nulo real) = 1.3%.
+let FRAUD = { compra:0.9, fraude:1.3 };
+const FRAUD0 = {...FRAUD};
+
+// y de la cinta (Bézier horizontal de d3-sankey) a una x dada → centro vertical de la rama en ese punto
+function ribbonY(l, X){
+  const x0=l.source.x1, x1=l.target.x0, xm=(x0+x1)/2, y0=l.y0, y1=l.y1;
+  const xAt = t => { const u=1-t; return u*u*u*x0 + 3*u*u*t*xm + 3*u*t*t*xm + t*t*t*x1; };
+  let lo=0, hi=1;
+  for(let k=0;k<24;k++){ const m=(lo+hi)/2; xAt(m)<X ? lo=m : hi=m; }
+  const t=(lo+hi)/2, u=1-t;
+  return y0*u*u*(1+2*t) + y1*t*t*(3-2*t);
+}
+
+// estira cada columna a toda la altura (los 3 totales son iguales).
+// no cambia las alturas de nodo → los anchos de cinta siguen siendo correctos.
+function equalizeColumns(){
+  const cols = d3.groups(graph.nodes, d=>Math.round(d.x0)).sort((a,b)=>a[0]-b[0]);
+  const dy = new Map();
+  for(const [,ns] of cols){
+    ns.sort((a,b)=>a.y0-b.y0);
+    const sumH = d3.sum(ns, n=>n.y1-n.y0);
+    const gap = ns.length>1 ? (innerH - sumH)/(ns.length-1) : 0;
+    let y=0;
+    for(const n of ns){ const h=n.y1-n.y0, old=n.y0; n.y0=y; n.y1=y+h; dy.set(n, y-old); y+=h+gap; }
+  }
+  for(const l of graph.links){ l.y0 += dy.get(l.source)||0; l.y1 += dy.get(l.target)||0; }
+}
+
+function clamp(v){ return Math.max(0, Math.min(100, v)); }
+
+function setPct(si, di, v){
+  v = Math.round(clamp(v)*10)/10;   // se guarda con un decimal (la caja muestra el entero redondeado)
+  const p = SRC[si].pct, others = [0,1,2].filter(k=>k!==di);
+  const rem = 100 - v, o = p[others[0]] + p[others[1]];
+  if (o > 0){ p[others[0]] = p[others[0]]/o*rem; p[others[1]] = p[others[1]]/o*rem; }
+  else { p[others[0]] = rem/2; p[others[1]] = rem/2; }
+  p[di] = v;
+}
+
+function expected(){
+  const e = [0,0,0];
+  SRC.forEach(s => s.pct.forEach((pc,j)=> e[j] += s.votes*pc/100));
+  return e;
+}
+
+function render(){
+  const e = expected();
+  const TOT = e[0]+e[1]+e[2];   // total dinámico (cambia si se editan los "Votos nuevos")
+  // El % de fraude (input) define cuántos votos salen de De la Espriella; el resultado real se deriva del esperado.
+  let cV = Math.max(0, FRAUD.compra/100*TOT), fV = Math.max(0, FRAUD.fraude/100*TOT);
+  if (cV+fV > e[1]){ const k=e[1]/(cV+fV||1); cV*=k; fV*=k; }   // no se puede sacar más de lo esperado de De la Espriella
+  const RREAL = [ e[0]+cV, e[1]-cV-fV, e[2]+fV ];
+  const F = [ [e[0],0,0], [cV, e[1]-cV-fV, fV], [0,0,e[2]] ];
+  // en empate (<1 voto), el distintivo se ancla al primer candidato (Cepeda)
+  const espWin = (Math.abs(e[0]-e[1])<1 || e[0]>=e[1]) ? N : N+1,
+        realWin = (Math.abs(RREAL[0]-RREAL[1])<1 || RREAL[0]>=RREAL[1]) ? N+3 : N+4;
+  const winners = new Set([espWin, realWin]);
+  graph.links.forEach(l=>{
+    l.value = l.type==='transfer'
+      ? Math.max(1e-6, SRC[l.si].votes*SRC[l.si].pct[l.di]/100)
+      : Math.max(1e-6, F[l.fi][l.fj]);
+  });
+  sankey(graph);
+  equalizeColumns();
+
+  // links
+  linkLayer.selectAll('path.link').data(graph.links)
+    .join(enter => enter.append('path').attr('class','link').call(s=>s.append('title')))
+    .attr('d', d3.sankeyLinkHorizontal())
+    .attr('stroke', d=>d.color)
+    .attr('stroke-width', d=>Math.max(0, d.width))
+    .select('title').text(d=> d.type==='transfer'
+      ? `${SRC[d.si].name} → ${DEST[d.di].name}: ${fmt(d.value)} votos`
+      : `${DEST[d.fi].name} (esperado) → ${DEST[d.fj].name} (real): ${fmt(d.value)} votos`);
+
+  // nodes
+  const nodes = nodeLayer.selectAll('g.node').data(graph.nodes).join('g').attr('class','node');
+  nodes.selectAll('rect').data(d=>[d]).join('rect')
+    .attr('x',d=>d.x0).attr('y',d=>d.y0)
+    .attr('width',d=>d.x1-d.x0).attr('height',d=>Math.max(1,d.y1-d.y0))
+    .attr('fill',d=>{ const i=graph.nodes.indexOf(d); return i<N ? srcFill(i) : DEST[(i-N)%3].color; })
+    .attr('stroke',d=>winners.has(graph.nodes.indexOf(d))?'#ffd54a':'#0a0d12')
+    .attr('stroke-width',d=>winners.has(graph.nodes.indexOf(d))?3.5:0.5)
+    .classed('winnode', d=>winners.has(graph.nodes.indexOf(d)));
+
+  // etiquetas (3 tipos: fuente · esperado · real)
+  nodes.selectAll('text.nm').data(d=>[d]).join('text').attr('class','nm')
+    .each(function(d){ const i=graph.nodes.indexOf(d), gp=grpOf(i), t=d3.select(this);
+      if(gp==='src')      t.attr('x',d.x0-8).attr('y',(d.y0+d.y1)/2-3).attr('text-anchor','end').text(SRC[i].name);
+      else if(gp==='real')t.attr('x',d.x1+10).attr('y',(d.y0+d.y1)/2-3).attr('text-anchor','start').text(DEST[i-(N+3)].short);
+      else                t.text(''); });
+  nodes.selectAll('text.vt').data(d=>[d]).join('text').attr('class','v vt')
+    .each(function(d){ const i=graph.nodes.indexOf(d), gp=grpOf(i), t=d3.select(this);
+      if(gp==='src')       t.attr('x',d.x0-8).attr('y',(d.y0+d.y1)/2+12).attr('text-anchor','end').text(SRC[i].name==='Votos nuevos' ? '' : fmt(SRC[i].votes)+' votos');
+      else if(gp==='real'){ const v=RREAL[i-(N+3)]; t.attr('x',d.x1+10).attr('y',(d.y0+d.y1)/2+12).attr('text-anchor','start').text(`${fmt(v)} · ${(v/TOT*100).toFixed(1)}%`); }
+      else                { t.attr('x',(d.x0+d.x1)/2).attr('y',d.y0-5).attr('text-anchor','middle').text('esp '+fmtM(e[i-N])); } });
+
+  // campo editable: votos de "Votos nuevos" (sólo 2026)
+  const vnIdx = SRC.findIndex(s=>s.name==='Votos nuevos');
+  const vnArr = vnIdx>=0 ? [graph.nodes[vnIdx]] : [];
+  const vnfo = labelLayer.selectAll('foreignObject.votosfield').data(vnArr)
+    .join(enter=>{ const fe=enter.append('foreignObject').attr('class','votosfield').attr('width',116).attr('height',20);
+      const row=fe.append('xhtml:div').style('display','flex').style('align-items','center').style('justify-content','flex-end').style('gap','4px').style('height','100%');
+      row.append('xhtml:input').attr('type','text').attr('inputmode','numeric')
+        .style('width','80px').style('height','18px').style('border','1px solid var(--line)').style('background','#0c1016').style('color','var(--ink)').style('font-family','inherit').style('font-size','11px').style('text-align','right').style('border-radius','4px').style('padding','0 4px').style('outline','none')
+        .on('input', function(){ SRC[vnIdx].votes = Math.max(0, parseInt(this.value.replace(/\D/g,''),10)||0); render(); })
+        .on('blur', function(){ this.value = fmt(SRC[vnIdx].votes); });   // al salir, muestra separadores de miles
+      row.append('xhtml:span').text('votos').style('font-size','11px').style('color','var(--muted)');
+      return fe; });
+  vnfo.attr('x',d=>d.x0-8-116).attr('y',d=>(d.y0+d.y1)/2+2);
+  vnfo.select('input').property('value', function(){ return document.activeElement===this ? this.value : fmt(SRC[vnIdx].votes); });
+
+  // encabezados centrados sobre cada columna
+  headLayer.selectAll('text.colhead').attr('x',function(){
+    const c=+this.getAttribute('data-col'), n=graph.nodes[c===0?0:c===1?N:N+3]; return (n.x0+n.x1)/2; });
+
+  // distintivo "Ganador"/"Empate" sobre el nodo ganador de Esperado y de Real
+  const winTie = [ Math.abs(e[0]-e[1]) < 1, Math.abs(RREAL[0]-RREAL[1]) < 1 ];  // "Empate" si los 2 primeros están a menos de 1 voto
+  const winData = [graph.nodes[espWin], graph.nodes[realWin]];
+  const wg = winLayer.selectAll('g.win').data(winData)
+    .join(enter=>{ const gg=enter.append('g').attr('class','win').attr('transform',(d,i)=>`translate(${(d.x0+d.x1)/2},${i===1?Math.max(d.y0+11,(d.y0+d.y1)/2-30):(d.y0+d.y1)/2})`);
+      gg.append('rect').attr('class','winpill').attr('x',-32).attr('y',-9).attr('width',64).attr('height',18).attr('rx',9);
+      gg.append('text').attr('class','wintxt').attr('text-anchor','middle').attr('y',4).text('Ganador');
+      return gg; });
+  wg.select('text.wintxt').text((d,i)=> winTie[i] ? 'Empate' : 'Ganador')
+    .style('fill', (d,i)=> winTie[i] ? '#fff' : null);
+  wg.select('rect.winpill')
+    .style('fill', (d,i)=> winTie[i] ? '#8a8f98' : null)
+    .style('stroke', (d,i)=> winTie[i] ? '#4b5563' : null);
+  wg.transition().duration(220).ease(d3.easeCubicOut)
+    .attr('transform',(d,i)=>{ const cx=(d.x0+d.x1)/2,
+      cy = i===1 ? Math.max(d.y0+11,(d.y0+d.y1)/2-30) : (d.y0+d.y1)/2;  // real: súbelo sobre la etiqueta del nodo
+      return `translate(${cx},${cy})`; });
+
+  // etiquetas de hipótesis sobre las ramas Esperado→Real que salen de De la Espriella
+  const flowLbl = [
+    {fi:1, fj:0, text:'Posible compra de votos / votos fusil'},
+    {fi:1, fj:2, text:'Posible Fraude en Mesa (testigos)'},
+  ];
+  const flItems = flowLbl.map(s=>{
+    const l = graph.links.find(k=>k.type==='flow' && k.fi===s.fi && k.fj===s.fj);
+    return {key:`${s.fi}-${s.fj}`, text:s.text,
+      x:(l.source.x1+l.target.x0)/2, y:(l.y0+l.y1)/2, show:l.value>1000};
+  });
+  const fl = flowLabLayer.selectAll('g.flab').data(flItems, d=>d.key)
+    .join(enter=>{ const gg=enter.append('g').attr('class','flab').attr('transform',d=>`translate(${d.x},${d.y})`);
+      gg.append('rect').attr('class','flabbg').attr('rx',6);
+      gg.append('text').attr('class','flabtx').attr('text-anchor','middle').attr('dominant-baseline','central');
+      return gg; });
+  fl.style('display',d=>d.show?null:'none');
+  fl.select('text.flabtx').text(d=>d.text);
+  fl.each(function(){ const t=this.querySelector('text'); if(!t) return; const bb=t.getBBox();
+    d3.select(this).select('rect.flabbg').attr('x',bb.x-7).attr('y',bb.y-4).attr('width',bb.width+14).attr('height',bb.height+8); });
+  fl.transition().duration(220).ease(d3.easeCubicOut).attr('transform',d=>`translate(${d.x},${d.y})`);
+
+  // inputs editables de % de fraude: controlan el tamaño del flujo que sale de De la Espriella
+  const fraudData = [{key:'1-0', fk:'compra'},{key:'1-2', fk:'fraude'}]
+    .map(d=>{ const it=flItems.find(f=>f.key===d.key); return {...d, x:it.x, y:it.y}; });
+  const ffo = flowLabLayer.selectAll('foreignObject.fpct').data(fraudData, d=>d.key)
+    .join(enter=>{ const fe=enter.append('foreignObject').attr('class','pctbox fpct').attr('width',52).attr('height',22);
+      const r=fe.append('xhtml:div').attr('class','row');
+      r.append('xhtml:input').attr('type','number').attr('min',0).attr('max',100).attr('step',0.1)
+        .on('input', function(ev,d){ FRAUD[d.fk]=Math.max(0,parseFloat(this.value)||0); render(); });
+      r.append('xhtml:span').attr('class','pc').text('%');
+      fe.attr('x',d=>d.x-26).attr('y',d=>d.y+13);
+      return fe; });
+  ffo.transition().duration(220).ease(d3.easeCubicOut).attr('x',d=>d.x-26).attr('y',d=>d.y+13);
+  ffo.select('input').style('border-color','#c0392b').attr('title',d=>'% '+d.fk)
+    .property('value', function(d){ return document.activeElement===this ? this.value : (Math.round(FRAUD[d.fk]*10)/10); });
+
+  // % editables (sólo transfer): un escalón/step por fuente; caja en el centro vertical de su rama; ceros al fondo
+  const gapStart=graph.nodes[0].x1, gapEnd=graph.nodes[N].x0;
+  const bandX = si => gapStart + (gapEnd-gapStart)*((si+0.5)/N);
+  const placed = [];
+  for(let si=0; si<N; si++){
+    const links = graph.links.filter(l=>l.type==='transfer' && l.si===si);
+    if(!links.length) continue;
+    const node = links[0].source;            // nodo de 1ª vuelta
+    const ls = links.map(l=>{
+      const zero = Math.round(SRC[si].pct[l.di])===0;   // si el % es 0 → al fondo de su fuente
+      return {l, zero, x:bandX(si), y: zero ? node.y1 : ribbonY(l, bandX(si))};
+    });
+    ls.sort((a,b)=>a.y-b.y);
+    const minGap=23;
+    for(let i=1;i<ls.length;i++) if(ls[i].y<ls[i-1].y+minGap) ls[i].y=ls[i-1].y+minGap;
+    placed.push(...ls);
+  }
+
+  const fo = labelLayer.selectAll('foreignObject.pctbox').data(placed, d=>d.l.si+'-'+d.l.di);
+  const foE = fo.enter().append('foreignObject').attr('width',52).attr('height',22).attr('class','pctbox');
+  const row = foE.append('xhtml:div').attr('class','row');
+  row.append('xhtml:input').attr('type','number').attr('min',0).attr('max',100).attr('step',0.1)
+    .on('input', function(ev,d){ setPct(d.l.si,d.l.di, parseFloat(this.value)||0); render(); })
+    .on('blur', function(ev,d){ this.value = Math.round(SRC[d.l.si].pct[d.l.di]); });  // al salir, muestra el entero redondeado
+  row.append('xhtml:span').attr('class','pc').text('%');
+  const tip = d => `${SRC[d.l.si].name} → ${DEST[d.l.di].name}`;
+  foE.attr('x',d=>d.x-26).attr('y',d=>d.y-11);            // posición inicial (sin animar)
+  const foAll = foE.merge(fo);
+  foAll.transition().duration(220).ease(d3.easeCubicOut) // se desplaza al cambiar el %
+    .attr('x',d=>d.x-26).attr('y',d=>d.y-11);
+  foAll.select('div.row').attr('title', tip);
+  foAll.select('input').style('border-color', d=>DEST[d.l.di].color).attr('title', tip)
+    .style('background', d=>srcFill(d.l.si)).style('color', d=>textOn(srcFill(d.l.si)))
+    .property('value', function(d){ return document.activeElement===this ? this.value : Math.round(SRC[d.l.si].pct[d.l.di]); });
+
+  updatePanels(e, RREAL);
+}
+
+function updatePanels(e, RREAL){
+  const win = e[0] > e[1] ? 0 : 1;
+  const margin = Math.abs(e[0]-e[1]);
+  const realWin = RREAL[0] > RREAL[1] ? 0 : 1;
+  const espTie = Math.abs(e[0]-e[1]) < 1, realTie = Math.abs(RREAL[0]-RREAL[1]) < 1;  // empate si <1 voto
+  const b = d3.select('#banner');
+  b.html('');
+  b.append('div').html(`<b>${espTie ? 'Resultado esperado (modelo):' : 'Ganador esperado (modelo):'}</b>`);
+  b.append('span').attr('class','pill')
+    .style('background', espTie ? '#8a8f98' : DEST[win].color).style('color','#fff')
+    .text(espTie ? 'Empate' : `${DEST[win].short} +${fmt(margin)}`);
+  b.append('div').html(`<b>${realTie ? 'Resultado real:' : 'Ganador real:'}</b>`);
+  b.append('span').attr('class','pill')
+    .style('background', realTie ? '#8a8f98' : DEST[realWin].color).style('color','#fff')
+    .text(realTie ? 'Empate' : `${DEST[realWin].short} +${fmt(Math.abs(RREAL[0]-RREAL[1]))}`);
+  const same = (espTie && realTie) || (!espTie && !realTie && win===realWin);
+  const anyTie = (espTie || realTie) && !same;
+  const verdict = b.append('div');
+  if (same)        verdict.style('color','#46c46a').html('✓ El modelo coincide con la realidad');
+  else if (anyTie) verdict.style('color','#9aa7b8').html('— Empate: sin contradicción concluyente');
+  else             verdict.attr('class','blinkbad').html('⚠ El modelo contradice el resultado real (Posible fraude)');
+}
+
+d3.select('#reset').on('click', ()=>{
+  SRC = ORIG.map(s=>({...s, pct:[...s.pct]}));
+  FRAUD = {...FRAUD0};
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
