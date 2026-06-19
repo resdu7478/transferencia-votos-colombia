@@ -143,11 +143,11 @@ const DEST = [
 ];
 const ORIG = [
   {name:'Gustavo Petro',         votes:8540145, pct:[100,0,0]},
-  {name:'Rodolfo Hernández',     votes:5964847, pct:[3.53,92.98,3.49]},
-  {name:'Federico Gutiérrez',    votes:5068648, pct:[3.53,92.98,3.49]},
-  {name:'Sergio Fajardo',        votes:884982,  pct:[69.6,26.91,3.49]},
-  {name:'Otros / Blanco / Nulo', votes:979806,  pct:[69.6,26.91,3.49]},
-  {name:'Votos nuevos',          votes:1246328, pct:[69.6,26.91,3.49]},
+  {name:'Rodolfo Hernández',     votes:5964847, pct:[4.51,92.04,3.45]},
+  {name:'Federico Gutiérrez',    votes:5068648, pct:[4.51,92.04,3.45]},
+  {name:'Sergio Fajardo',        votes:884982,  pct:[65.9,30.19,3.91]},
+  {name:'Otros / Blanco / Nulo', votes:979806,  pct:[65.9,30.19,3.91]},
+  {name:'Votos nuevos',          votes:1246328, pct:[65.9,30.19,3.91]},
 ];
 let SRC = ORIG.map(s => ({...s, pct:[...s.pct]}));
 const R2_TOTAL = DEST.reduce((a,d)=>a+d.real,0);
