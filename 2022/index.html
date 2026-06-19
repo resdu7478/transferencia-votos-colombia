@@ -327,7 +327,7 @@ function render(){
   const foE = fo.enter().append('foreignObject').attr('width',52).attr('height',22).attr('class','pctbox');
   const row = foE.append('xhtml:div').attr('class','row');
   row.append('xhtml:input').attr('type','number').attr('min',0).attr('max',100).attr('step',0.1)
-    .on('input', function(ev,d){ setPct(d.l.si,d.l.di, parseFloat(this.value)||0); render(); })
+    .on('change', function(ev,d){ setPct(d.l.si,d.l.di, parseFloat(this.value)||0); render(); })  // sólo al confirmar (Enter / salir): las ramas no se mueven mientras se escribe
     .on('blur', function(ev,d){ this.value = Math.round(SRC[d.l.si].pct[d.l.di]); });  // al salir, muestra el entero redondeado
   row.append('xhtml:span').attr('class','pc').text('%');
   const tip = d => `${SRC[d.l.si].name} → ${DEST[d.l.di].name}`;

@@ -413,9 +413,11 @@ function syncEditor(){ if(!EDIT) return; const v=editorValue();
   _ebVal.textContent = (Math.round(v*10)/10)+'%'; }
 function setEditorValue(v){ if(!EDIT) return; v=Math.max(0,Math.min(100,v));
   setPct(EDIT.si,EDIT.di,v); render(); syncEditor(); }
+function previewEditorValue(v){ v=Math.max(0,Math.min(100,v)); _ebVal.textContent=(Math.round(v*10)/10)+'%'; }  // arrastrar: muestra el número sin redibujar las ramas
 function openEditor(t){ EDIT=t; _eb.classList.add('open'); syncEditor(); }
 function closeEditor(){ EDIT=null; _eb.classList.remove('open'); }
-_ebSlider.addEventListener('input', e=> setEditorValue(parseFloat(e.target.value)||0));
+_ebSlider.addEventListener('input', e=> previewEditorValue(parseFloat(e.target.value)||0));  // arrastrar: sólo el número
+_ebSlider.addEventListener('change', e=> setEditorValue(parseFloat(e.target.value)||0));      // soltar: confirma y redibuja
 _eb.querySelector('.eb-minus').addEventListener('click', ()=> setEditorValue(editorValue()-1));
 _eb.querySelector('.eb-plus').addEventListener('click', ()=> setEditorValue(editorValue()+1));
 _eb.querySelector('.eb-close').addEventListener('click', closeEditor);

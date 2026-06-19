@@ -276,7 +276,7 @@ function render(){
       const row=fe.append('xhtml:div').style('display','flex').style('align-items','center').style('justify-content','flex-end').style('gap','4px').style('height','100%');
       row.append('xhtml:input').attr('type','text').attr('inputmode','numeric')
         .style('width','80px').style('height','18px').style('border','1px solid var(--line)').style('background','#0c1016').style('color','var(--ink)').style('font-family','inherit').style('font-size','11px').style('text-align','right').style('border-radius','4px').style('padding','0 4px').style('outline','none')
-        .on('input', function(){ SRC[vnIdx].votes = Math.max(0, parseInt(this.value.replace(/\D/g,''),10)||0); render(); })
+        .on('change', function(){ SRC[vnIdx].votes = Math.max(0, parseInt(this.value.replace(/\D/g,''),10)||0); render(); })  // sólo al confirmar: las ramas no se mueven mientras se escribe
         .on('blur', function(){ this.value = fmt(SRC[vnIdx].votes); });   // al salir, muestra separadores de miles
       row.append('xhtml:span').text('votos').style('font-size','11px').style('color','var(--muted)');
       return fe; });
@@ -334,7 +334,7 @@ function render(){
     .join(enter=>{ const fe=enter.append('foreignObject').attr('class','pctbox fpct').attr('width',52).attr('height',22);
       const r=fe.append('xhtml:div').attr('class','row');
       r.append('xhtml:input').attr('type','number').attr('min',0).attr('max',100).attr('step',0.1)
-        .on('input', function(ev,d){ FRAUD[d.fk]=Math.max(0,parseFloat(this.value)||0); render(); });
+        .on('change', function(ev,d){ FRAUD[d.fk]=Math.max(0,parseFloat(this.value)||0); render(); });  // sólo al confirmar: las ramas no se mueven mientras se escribe
       r.append('xhtml:span').attr('class','pc').text('%');
       fe.attr('x',d=>d.x-26).attr('y',d=>d.y+13);
       return fe; });
@@ -364,7 +364,7 @@ function render(){
   const foE = fo.enter().append('foreignObject').attr('width',52).attr('height',22).attr('class','pctbox');
   const row = foE.append('xhtml:div').attr('class','row');
   row.append('xhtml:input').attr('type','number').attr('min',0).attr('max',100).attr('step',0.1)
-    .on('input', function(ev,d){ setPct(d.l.si,d.l.di, parseFloat(this.value)||0); render(); })
+    .on('change', function(ev,d){ setPct(d.l.si,d.l.di, parseFloat(this.value)||0); render(); })  // sólo al confirmar (Enter / salir): las ramas no se mueven mientras se escribe
     .on('blur', function(ev,d){ this.value = Math.round(SRC[d.l.si].pct[d.l.di]); });  // al salir, muestra el entero redondeado
   row.append('xhtml:span').attr('class','pc').text('%');
   const tip = d => `${SRC[d.l.si].name} → ${DEST[d.l.di].name}`;
