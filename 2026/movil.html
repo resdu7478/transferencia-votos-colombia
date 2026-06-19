@@ -258,10 +258,12 @@ function render(){
   if (cV+fV > e[1]){ const k=e[1]/(cV+fV||1); cV*=k; fV*=k; }   // no se puede sacar más de lo esperado de De la Espriella
   const RREAL = [ e[0]+cV, e[1]-cV-fV, e[2]+fV ];
   const F = [ [e[0],0,0], [cV, e[1]-cV-fV, fV], [0,0,e[2]] ];
-  // en empate (<1 voto), el distintivo se ancla al primer candidato (Cepeda)
+  // en empate (<1 voto) se marca a AMBOS candidatos de la columna
   const espWin = (Math.abs(e[0]-e[1])<1 || e[0]>=e[1]) ? N : N+1,
         realWin = (Math.abs(RREAL[0]-RREAL[1])<1 || RREAL[0]>=RREAL[1]) ? N+3 : N+4;
-  const winners = new Set([espWin, realWin]);
+  const espTie = Math.abs(e[0]-e[1]) < 1, realTie = Math.abs(RREAL[0]-RREAL[1]) < 1;
+  const winners = new Set(espTie ? [N,N+1] : [espWin]);
+  (realTie ? [N+3,N+4] : [realWin]).forEach(i=>winners.add(i));
   graph.links.forEach(l=>{
     l.value = l.type==='transfer'
       ? Math.max(1e-6, SRC[l.si].votes*SRC[l.si].pct[l.di]/100)
@@ -322,23 +324,24 @@ function render(){
   headLayer.selectAll('text.colhead').attr('x',function(){
     const c=+this.getAttribute('data-col'), n=graph.nodes[c===0?0:c===1?N:N+3]; return (n.x0+n.x1)/2; });
 
-  // distintivo "Ganador"/"Empate" sobre el nodo ganador de Esperado y de Real
-  const winTie = [ Math.abs(e[0]-e[1]) < 1, Math.abs(RREAL[0]-RREAL[1]) < 1 ];  // "Empate" si los 2 primeros están a menos de 1 voto
-  const winData = [graph.nodes[espWin], graph.nodes[realWin]];
-  const wg = winLayer.selectAll('g.win').data(winData)
-    .join(enter=>{ const gg=enter.append('g').attr('class','win').attr('transform',(d,i)=>`translate(${(d.x0+d.x1)/2},${i===1?Math.max(d.y0+11,(d.y0+d.y1)/2-30):(d.y0+d.y1)/2})`);
+  // distintivo "Ganador"/"Empate" — en empate aparece en AMBOS candidatos de la columna
+  const winData = [];
+  (espTie ? [N,N+1] : [espWin]).forEach((i,k)=> winData.push({n:graph.nodes[i], tie:espTie, isReal:false, key:espTie?'esp-'+k:'esp'}));
+  (realTie ? [N+3,N+4] : [realWin]).forEach((i,k)=> winData.push({n:graph.nodes[i], tie:realTie, isReal:true, key:realTie?'real-'+k:'real'}));
+  const winPos = d=>{ const n=d.n, cx=(n.x0+n.x1)/2,
+    cy = d.isReal ? Math.max(n.y0+11,(n.y0+n.y1)/2-30) : (n.y0+n.y1)/2;  // real: súbelo sobre la etiqueta del nodo
+    return `translate(${cx},${cy})`; };
+  const wg = winLayer.selectAll('g.win').data(winData, d=>d.key)
+    .join(enter=>{ const gg=enter.append('g').attr('class','win').attr('transform',winPos);
       gg.append('rect').attr('class','winpill').attr('x',-48).attr('y',-13).attr('width',96).attr('height',26).attr('rx',13);
-      gg.append('text').attr('class','wintxt').attr('text-anchor','middle').attr('y',5).text('Ganador');
+      gg.append('text').attr('class','wintxt').attr('text-anchor','middle').attr('y',5);
       return gg; });
-  wg.select('text.wintxt').text((d,i)=> winTie[i] ? 'Empate' : 'Ganador')
-    .style('fill', (d,i)=> winTie[i] ? '#fff' : null);
+  wg.select('text.wintxt').text(d=> d.tie ? 'Empate' : 'Ganador')
+    .style('fill', d=> d.tie ? '#fff' : null);
   wg.select('rect.winpill')
-    .style('fill', (d,i)=> winTie[i] ? '#8a8f98' : null)
-    .style('stroke', (d,i)=> winTie[i] ? '#4b5563' : null);
-  wg.transition().duration(220).ease(d3.easeCubicOut)
-    .attr('transform',(d,i)=>{ const cx=(d.x0+d.x1)/2,
-      cy = i===1 ? Math.max(d.y0+11,(d.y0+d.y1)/2-30) : (d.y0+d.y1)/2;  // real: súbelo sobre la etiqueta del nodo
-      return `translate(${cx},${cy})`; });
+    .style('fill', d=> d.tie ? '#8a8f98' : null)
+    .style('stroke', d=> d.tie ? '#4b5563' : null);
+  wg.transition().duration(220).ease(d3.easeCubicOut).attr('transform',winPos);
 
   // etiquetas de hipótesis sobre las ramas Esperado→Real que salen de De la Espriella
   const flowLbl = [
