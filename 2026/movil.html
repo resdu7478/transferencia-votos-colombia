@@ -186,7 +186,7 @@ const linkLayer  = g.append('g');
 const nodeLayer  = g.append('g');
 const labelLayer = g.append('g');
 const headLayer  = g.append('g');
-[['1ª vuelta',0],['2ª vuelta · Esperado (modelo)',1],['2ª vuelta · Resultado real',2]].forEach(([t,c])=>
+[['1ª vuelta',0],['2ª vuelta · Esperado (modelo)',1],['2ª vuelta · Resultado real (con posible fraude)',2]].forEach(([t,c])=>
   headLayer.append('text').attr('class','colhead').attr('data-col',c)
     .attr('text-anchor','middle').attr('y',-22).text(t));
 const winLayer = g.append('g');
