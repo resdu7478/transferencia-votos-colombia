@@ -59,9 +59,11 @@
   .winpill{fill:#ffd54a;stroke:#5a4500;stroke-width:.5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
   .wintxt{fill:#3a2c00;font-size:15px;font-weight:800}
   .flabtx{fill:#ffe3d6;font-size:15px;font-weight:700}
-  .flabbg{fill:rgba(10,13,18,.85);stroke:#c0392b;stroke-width:1.2}
+  .flabbg{fill:rgba(46,10,10,.92);stroke:#ff3b3b;stroke-width:1.5;filter:drop-shadow(0 0 3px rgba(255,59,59,.45))}
   .link{fill:none;stroke-opacity:.42;transition:stroke-opacity .15s}
   .link:hover{stroke-opacity:.72}
+  .fraudlink{stroke-opacity:.72}
+  .fraudlink:hover{stroke-opacity:.92}
   .pctbox{width:64px;height:30px;overflow:visible}
   .pctbox .row{display:flex;align-items:center;justify-content:center;gap:2px;height:100%}
   .pctbox input{width:40px;height:100%;border-radius:5px;border:1.6px solid var(--line);
@@ -291,11 +293,14 @@ function render(){
   sankey(graph);
   equalizeColumns();
 
-  // links
+  // links — en "resultados reales" las ramas de fraude que entran a Cepeda se pintan de rojo
+  const FRAUDCOL = '#ff3b3b';
+  const isFraud = d => REALMODE && d.type==='flow' && d.fj===0 && d.fi!==0;
   linkLayer.selectAll('path.link').data(graph.links)
     .join(enter => enter.append('path').attr('class','link').call(s=>s.append('title')))
+    .classed('fraudlink', isFraud)
     .attr('d', d3.sankeyLinkHorizontal())
-    .attr('stroke', d=>d.color)
+    .attr('stroke', d=> isFraud(d) ? FRAUDCOL : d.color)
     .attr('stroke-width', d=>Math.max(0, d.width))
     .select('title').text(d=> d.type==='transfer'
       ? `${SRC[d.si].name} → ${DEST[d.di].name}: ${fmt(d.value)} votos`
