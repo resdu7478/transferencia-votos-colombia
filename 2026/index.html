@@ -69,6 +69,7 @@
   button{background:#222b39;color:var(--ink);border:1px solid var(--line);border-radius:8px;
     padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit}
   button:hover{background:#2c3a4d}
+  button.active{background:#5b9bff;border-color:#5b9bff;color:#fff}
   .note{color:var(--muted);font-size:12px;margin:10px 28px 0;max-width:920px;line-height:1.5}
   a{color:#6fa8ff}
 </style>
@@ -89,7 +90,7 @@
 </div>
 
 <div class="banner" id="banner"></div>
-<div class="controls"><button id="reset">↺ Restaurar supuestos originales</button></div>
+<div class="controls"><button id="reset">↺ Restaurar supuestos originales</button><button id="real">📊 Ver resultados reales</button></div>
 
 <div class="wrap">
   <svg id="chart" width="1300" height="640" aria-label="Diagrama Sankey editable de 3 columnas"></svg>
@@ -171,6 +172,9 @@ const grpOf = idx => idx<N ? 'src' : idx<N+3 ? 'esp' : 'real';
 // Por defecto: compra (DLE esperado → Cepeda real) = 0.9% y fraude (DLE esperado → Blanco/Nulo real) = 1.3%.
 let FRAUD = { compra:0.9, fraude:1.3 };
 const FRAUD0 = {...FRAUD};
+let REALMODE = false;  // "Ver resultados reales": fija el real al preconteo oficial de la 2ª vuelta
+const REAL_OFICIAL = [12708712, 12959542, 677110];   // [Cepeda, De la Espriella, Blanco/Nulo] · preconteo 21-jun-2026 (total 26.345.364)
+const REAL_VOTOSNUEVOS = 2367060;                     // votos nuevos que cuadran el total del modelo con la participación real
 
 // y de la cinta (Bézier horizontal de d3-sankey) a una x dada → centro vertical de la rama en ese punto
 function ribbonY(l, X){
@@ -217,11 +221,18 @@ function expected(){
 function render(){
   const e = expected();
   const TOT = e[0]+e[1]+e[2];   // total dinámico (cambia si se editan los "Votos nuevos")
-  // El % de fraude (input) define cuántos votos salen de De la Espriella; el resultado real se deriva del esperado.
-  let cV = Math.max(0, FRAUD.compra/100*TOT), fV = Math.max(0, FRAUD.fraude/100*TOT);
-  if (cV+fV > e[1]){ const k=e[1]/(cV+fV||1); cV*=k; fV*=k; }   // no se puede sacar más de lo esperado de De la Espriella
-  const RREAL = [ e[0]+cV, e[1]-cV-fV, e[2]+fV ];
-  const F = [ [e[0],0,0], [cV, e[1]-cV-fV, fV], [0,0,e[2]] ];
+  let RREAL, F, fraudTot = 0;
+  if (REALMODE){
+    RREAL = REAL_OFICIAL.slice();        // resultado real = preconteo oficial de la 2ª vuelta
+    F = flowMatrix(e, RREAL);            // reasignación esperado→real: los votos "desviados" de De la Espriella
+    fraudTot = F[1][0] + F[1][2];        // compra de votos / voto fusil + fraude en mesa
+  } else {
+    // El % de fraude (input) define cuántos votos salen de De la Espriella; el resultado real se deriva del esperado.
+    let cV = Math.max(0, FRAUD.compra/100*TOT), fV = Math.max(0, FRAUD.fraude/100*TOT);
+    if (cV+fV > e[1]){ const k=e[1]/(cV+fV||1); cV*=k; fV*=k; }   // no se puede sacar más de lo esperado de De la Espriella
+    RREAL = [ e[0]+cV, e[1]-cV-fV, e[2]+fV ];
+    F = [ [e[0],0,0], [cV, e[1]-cV-fV, fV], [0,0,e[2]] ];
+  }
   // en empate (<1 voto) se marca a AMBOS candidatos de la columna
   const espWin = (Math.abs(e[0]-e[1])<1 || e[0]>=e[1]) ? N : N+1,
         realWin = (Math.abs(RREAL[0]-RREAL[1])<1 || RREAL[0]>=RREAL[1]) ? N+3 : N+4;
@@ -280,7 +291,7 @@ function render(){
         .on('blur', function(){ this.value = fmt(SRC[vnIdx].votes); });   // al salir, muestra separadores de miles
       row.append('xhtml:span').text('votos').style('font-size','11px').style('color','var(--muted)');
       return fe; });
-  vnfo.attr('x',d=>d.x0-8-116).attr('y',d=>(d.y0+d.y1)/2+2);
+  vnfo.attr('x',d=>d.x0-8-116).attr('y',d=>(d.y0+d.y1)/2+2).style('display', REALMODE ? 'none' : null);
   vnfo.select('input').property('value', function(){ return document.activeElement===this ? this.value : fmt(SRC[vnIdx].votes); });
 
   // encabezados centrados sobre cada columna
@@ -313,7 +324,7 @@ function render(){
   ];
   const flItems = flowLbl.map(s=>{
     const l = graph.links.find(k=>k.type==='flow' && k.fi===s.fi && k.fj===s.fj);
-    return {key:`${s.fi}-${s.fj}`, text:s.text,
+    return {key:`${s.fi}-${s.fj}`, text: REALMODE ? `${s.text} · ${fmt(l.value)}` : s.text,
       x:(l.source.x1+l.target.x0)/2, y:(l.y0+l.y1)/2, show:l.value>1000};
   });
   const fl = flowLabLayer.selectAll('g.flab').data(flItems, d=>d.key)
@@ -339,6 +350,7 @@ function render(){
       fe.attr('x',d=>d.x-26).attr('y',d=>d.y+13);
       return fe; });
   ffo.transition().duration(220).ease(d3.easeCubicOut).attr('x',d=>d.x-26).attr('y',d=>d.y+13);
+  ffo.style('display', REALMODE ? 'none' : null);   // en "resultados reales" el fraude se calcula, no se edita
   ffo.select('input').style('border-color','#c0392b').attr('title',d=>'% '+d.fk)
     .property('value', function(d){ return document.activeElement===this ? this.value : (Math.round(FRAUD[d.fk]*10)/10); });
 
@@ -377,10 +389,11 @@ function render(){
     .style('background', d=>srcFill(d.l.si)).style('color', d=>textOn(srcFill(d.l.si)))
     .property('value', function(d){ return document.activeElement===this ? this.value : Math.round(SRC[d.l.si].pct[d.l.di]); });
 
-  updatePanels(e, RREAL);
+  updatePanels(e, RREAL, fraudTot);
+  d3.select('#real').classed('active', REALMODE);
 }
 
-function updatePanels(e, RREAL){
+function updatePanels(e, RREAL, fraudTot){
   const win = e[0] > e[1] ? 0 : 1;
   const margin = Math.abs(e[0]-e[1]);
   const realWin = RREAL[0] > RREAL[1] ? 0 : 1;
@@ -391,10 +404,20 @@ function updatePanels(e, RREAL){
   b.append('span').attr('class','pill')
     .style('background', espTie ? '#8a8f98' : DEST[win].color).style('color','#fff')
     .text(espTie ? 'Empate' : `${DEST[win].short} +${fmt(margin)}`);
-  b.append('div').html(`<b>${realTie ? 'Resultado real:' : 'Ganador real:'}</b>`);
+  b.append('div').html(`<b>${REALMODE ? 'Resultado real (oficial 2ª vuelta):' : (realTie ? 'Resultado real:' : 'Ganador real:')}</b>`);
   b.append('span').attr('class','pill')
     .style('background', realTie ? '#8a8f98' : DEST[realWin].color).style('color','#fff')
     .text(realTie ? 'Empate' : `${DEST[realWin].short} +${fmt(Math.abs(RREAL[0]-RREAL[1]))}`);
+  if (REALMODE){
+    const margenReal = Math.abs(RREAL[0]-RREAL[1]);
+    b.append('div')
+      .attr('class', fraudTot>margenReal ? 'blinkbad' : null)
+      .style('color', fraudTot>margenReal ? null : '#ff8a5b')
+      .html(fraudTot>margenReal
+        ? `⚠ Posible fraude estimado: ~${fmt(fraudTot)} votos — supera el margen de victoria (${fmt(margenReal)}). Sin él, el resultado pudo invertirse.`
+        : `Posible fraude estimado: ~${fmt(fraudTot)} votos · margen de victoria: ${fmt(margenReal)}.`);
+    return;
+  }
   const same = (espTie && realTie) || (!espTie && !realTie && win===realWin);
   const anyTie = (espTie || realTie) && !same;
   const verdict = b.append('div');
@@ -404,8 +427,15 @@ function updatePanels(e, RREAL){
 }
 
 d3.select('#reset').on('click', ()=>{
+  REALMODE = false;
   SRC = ORIG.map(s=>({...s, pct:[...s.pct]}));
   FRAUD = {...FRAUD0};
+  render();
+});
+
+d3.select('#real').on('click', ()=>{
+  REALMODE = true;
+  SRC[SRC.findIndex(s=>s.name==='Votos nuevos')].votes = REAL_VOTOSNUEVOS;   // cuadra el total del modelo con la participación real
   render();
 });
 
