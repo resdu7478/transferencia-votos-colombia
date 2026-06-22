@@ -90,7 +90,7 @@
 </div>
 
 <div class="banner" id="banner"></div>
-<div class="controls"><button id="reset">↺ Restaurar supuestos originales</button><button id="real">📊 Ver resultados reales</button></div>
+<div class="controls"><button id="real">📊 Ver resultados reales</button></div>
 
 <div class="wrap">
   <svg id="chart" width="1300" height="640" aria-label="Diagrama Sankey editable de 3 columnas"></svg>
@@ -174,7 +174,15 @@ let FRAUD = { compra:0.9, fraude:1.3 };
 const FRAUD0 = {...FRAUD};
 let REALMODE = false;  // "Ver resultados reales": fija el real al preconteo oficial de la 2ª vuelta
 const REAL_OFICIAL = [12708712, 12959542, 677110];   // [Cepeda, De la Espriella, Blanco/Nulo] · preconteo 21-jun-2026 (total 26.345.364)
-const REAL_VOTOSNUEVOS = 2367060;                     // votos nuevos que cuadran el total del modelo con la participación real
+const REAL_VOTOSNUEVOS = 2116798;                     // cuadra el total esperado a 26.095.102 (votos reales de 1ª vuelta)
+// supuestos de transferencia para "Ver resultados reales", por fuente: [% a Cepeda, % a De la Espriella, % Blanco/Nulo]
+const REAL_PCT = {
+  'Iván Cepeda':                                    [95, 2, 3],
+  'Abelardo de la Espriella':                       [2, 95, 3],
+  'Paloma Valencia':                                [5, 80, 15],
+  'Fajardo / López / Otros / Blanco / Nulos':       [33, 33, 34],
+  'Votos nuevos':                                   [48.5, 48.5, 3],
+};
 
 // y de la cinta (Bézier horizontal de d3-sankey) a una x dada → centro vertical de la rama en ese punto
 function ribbonY(l, X){
@@ -224,8 +232,8 @@ function render(){
   let RREAL, F, fraudTot = 0;
   if (REALMODE){
     RREAL = REAL_OFICIAL.slice();        // resultado real = preconteo oficial de la 2ª vuelta
-    F = flowMatrix(e, RREAL);            // reasignación esperado→real: los votos "desviados" de De la Espriella
-    fraudTot = F[1][0] + F[1][2];        // compra de votos / voto fusil + fraude en mesa
+    F = flowMatrix(e, RREAL);            // reasignación esperado→real
+    fraudTot = F[1][0] + F[2][0];        // votos que Cepeda ganó sobre el modelo: desde De la Espriella (compra) + desde Blanco/Nulo (fraude en mesa)
   } else {
     // El % de fraude (input) define cuántos votos salen de De la Espriella; el resultado real se deriva del esperado.
     let cV = Math.max(0, FRAUD.compra/100*TOT), fV = Math.max(0, FRAUD.fraude/100*TOT);
@@ -317,8 +325,12 @@ function render(){
     .style('stroke', d=> d.tie ? '#4b5563' : null);
   wg.transition().duration(220).ease(d3.easeCubicOut).attr('transform',winPos);
 
-  // etiquetas de hipótesis sobre las ramas Esperado→Real que salen de De la Espriella
-  const flowLbl = [
+  // etiquetas de hipótesis sobre las ramas Esperado→Real
+  // en "resultados reales" el fraude son los votos que entran a Cepeda; editando, los que salen de De la Espriella
+  const flowLbl = REALMODE ? [
+    {fi:1, fj:0, text:'Posible compra de votos / votos fusil'},   // De la Espriella esperado → Cepeda real
+    {fi:2, fj:0, text:'Posible Fraude en Mesa (testigos)'},       // Blanco/Nulo esperado → Cepeda real
+  ] : [
     {fi:1, fj:0, text:'Posible compra de votos / votos fusil'},
     {fi:1, fj:2, text:'Posible Fraude en Mesa (testigos)'},
   ];
@@ -340,7 +352,8 @@ function render(){
 
   // inputs editables de % de fraude: controlan el tamaño del flujo que sale de De la Espriella
   const fraudData = [{key:'1-0', fk:'compra'},{key:'1-2', fk:'fraude'}]
-    .map(d=>{ const it=flItems.find(f=>f.key===d.key); return {...d, x:it.x, y:it.y}; });
+    .map(d=>{ const it=flItems.find(f=>f.key===d.key); return it ? {...d, x:it.x, y:it.y} : null; })
+    .filter(Boolean);
   const ffo = flowLabLayer.selectAll('foreignObject.fpct').data(fraudData, d=>d.key)
     .join(enter=>{ const fe=enter.append('foreignObject').attr('class','pctbox fpct').attr('width',52).attr('height',22);
       const r=fe.append('xhtml:div').attr('class','row');
@@ -426,16 +439,10 @@ function updatePanels(e, RREAL, fraudTot){
   else             verdict.attr('class','blinkbad').html('⚠ El modelo contradice el resultado real (Posible fraude)');
 }
 
-d3.select('#reset').on('click', ()=>{
-  REALMODE = false;
-  SRC = ORIG.map(s=>({...s, pct:[...s.pct]}));
-  FRAUD = {...FRAUD0};
-  render();
-});
-
 d3.select('#real').on('click', ()=>{
   REALMODE = true;
-  SRC[SRC.findIndex(s=>s.name==='Votos nuevos')].votes = REAL_VOTOSNUEVOS;   // cuadra el total del modelo con la participación real
+  SRC.forEach(s=>{ if (REAL_PCT[s.name]) s.pct = [...REAL_PCT[s.name]]; });   // supuestos de transferencia "reales"
+  SRC[SRC.findIndex(s=>s.name==='Votos nuevos')].votes = REAL_VOTOSNUEVOS;    // total esperado = 26.095.102
   render();
 });
 
