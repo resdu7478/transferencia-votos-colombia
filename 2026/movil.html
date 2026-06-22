@@ -441,7 +441,8 @@ function render(){
     .property('value', function(d){ return Math.round(SRC[d.l.si].pct[d.l.di]); });
 
   updatePanels(e, RREAL, fraudTot);
-  d3.select('#real').classed('active', REALMODE);
+  d3.select('#real').classed('active', REALMODE)
+    .text(REALMODE ? '↺ Restaurar supuestos originales' : '📊 Ver resultados reales');
 }
 
 function updatePanels(e, RREAL, fraudTot){
@@ -500,9 +501,15 @@ _eb.querySelector('.eb-plus').addEventListener('click', ()=> setEditorValue(edit
 _eb.querySelector('.eb-close').addEventListener('click', closeEditor);
 
 d3.select('#real').on('click', ()=>{
-  REALMODE = true;
-  SRC.forEach(s=>{ if (REAL_PCT[s.name]) s.pct = [...REAL_PCT[s.name]]; });   // supuestos de transferencia "reales"
-  SRC[SRC.findIndex(s=>s.name==='Votos nuevos')].votes = REAL_VOTOSNUEVOS;    // total esperado = 26.095.102
+  if (REALMODE){                                          // ya en resultados reales → restaurar supuestos originales
+    REALMODE = false;
+    SRC = ORIG.map(s=>({...s, pct:[...s.pct]}));
+    FRAUD = {...FRAUD0};
+  } else {
+    REALMODE = true;
+    SRC.forEach(s=>{ if (REAL_PCT[s.name]) s.pct = [...REAL_PCT[s.name]]; });   // supuestos de transferencia "reales"
+    SRC[SRC.findIndex(s=>s.name==='Votos nuevos')].votes = REAL_VOTOSNUEVOS;    // total esperado = total real oficial
+  }
   closeEditor();
   render();
 });
