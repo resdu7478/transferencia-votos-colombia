@@ -427,7 +427,7 @@ function updatePanels(e, RREAL, fraudTot){
       .attr('class', fraudTot>margenReal ? 'blinkbad' : null)
       .style('color', fraudTot>margenReal ? null : '#ff8a5b')
       .html(fraudTot>margenReal
-        ? `⚠ Posible fraude estimado: ~${fmt(fraudTot)} votos — supera el margen de victoria (${fmt(margenReal)}). Sin él, el resultado pudo invertirse.`
+        ? `⚠ Posible fraude estimado: ~${fmt(fraudTot)} votos — supera el margen de victoria (${fmt(margenReal)}).`
         : `Posible fraude estimado: ~${fmt(fraudTot)} votos · margen de victoria: ${fmt(margenReal)}.`);
     return;
   }
