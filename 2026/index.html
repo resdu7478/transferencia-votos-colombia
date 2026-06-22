@@ -283,9 +283,9 @@ function render(){
       else                t.text(''); });
   nodes.selectAll('text.vt').data(d=>[d]).join('text').attr('class','v vt')
     .each(function(d){ const i=graph.nodes.indexOf(d), gp=grpOf(i), t=d3.select(this);
-      if(gp==='src')       t.attr('x',d.x0-8).attr('y',(d.y0+d.y1)/2+12).attr('text-anchor','end').text(SRC[i].name==='Votos nuevos' ? '' : fmt(SRC[i].votes)+' votos');
+      if(gp==='src')       t.attr('x',d.x0-8).attr('y',(d.y0+d.y1)/2+12).attr('text-anchor','end').text(SRC[i].name==='Votos nuevos' && !REALMODE ? '' : fmt(SRC[i].votes)+' votos');
       else if(gp==='real'){ const v=RREAL[i-(N+3)]; t.attr('x',d.x1+10).attr('y',(d.y0+d.y1)/2+12).attr('text-anchor','start').text(`${fmt(v)} · ${(v/TOT*100).toFixed(1)}%`); }
-      else                { t.attr('x',(d.x0+d.x1)/2).attr('y',d.y0-5).attr('text-anchor','middle').text('esp '+fmtM(e[i-N])); } });
+      else                { t.attr('x',(d.x0+d.x1)/2).attr('y',d.y0-5).attr('text-anchor','middle').text('esp '+fmtM(e[i-N])+' · '+(e[i-N]/TOT*100).toFixed(1)+'%'); } });
 
   // campo editable: votos de "Votos nuevos" (sólo 2026)
   const vnIdx = SRC.findIndex(s=>s.name==='Votos nuevos');
