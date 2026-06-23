@@ -519,6 +519,10 @@ d3.select('#real').on('click', ()=>{
   render();
 });
 
+// la página arranca en la vista de resultados reales (Posible fraude estimado)
+REALMODE = true;
+SRC.forEach(s=>{ if (REAL_PCT[s.name]) s.pct = [...REAL_PCT[s.name]]; });
+SRC[SRC.findIndex(s=>s.name==='Votos nuevos')].votes = REAL_VOTOSNUEVOS;
 render();
 </script>
 </body>
