@@ -334,7 +334,7 @@ function render(){
   // etiquetas de hipótesis sobre las ramas Esperado→Real
   // en "resultados reales" el fraude son los votos que entran a Cepeda; editando, los que salen de De la Espriella
   const flowLbl = REALMODE ? [
-    {fi:1, fj:0, text:'Posible Fraude (Compra de votos, votos fusil, etc.)'},   // De la Espriella esperado → Cepeda real
+    {fi:1, fj:0, dy:-26, text:'Posible Fraude (Compra de votos, votos fusil, etc.)'},   // De la Espriella esperado → Cepeda real (sube para no tapar la rama fina)
     {fi:2, fj:0, text:'Posible Fraude (Compra de votos, votos fusil, etc.)'},   // Blanco/Nulo esperado → Cepeda real
   ] : [
     {fi:1, fj:0, text:'Posible compra de votos / votos fusil'},
@@ -343,7 +343,7 @@ function render(){
   const flItems = flowLbl.map(s=>{
     const l = graph.links.find(k=>k.type==='flow' && k.fi===s.fi && k.fj===s.fj);
     return {key:`${s.fi}-${s.fj}`, text: REALMODE ? `${s.text} · ${fmt(l.value)}` : s.text,
-      x:(l.source.x1+l.target.x0)/2, y:(l.y0+l.y1)/2, show:l.value>1000};
+      x:(l.source.x1+l.target.x0)/2, y:(l.y0+l.y1)/2 + (s.dy||0), show:l.value>1000};
   });
   const fl = flowLabLayer.selectAll('g.flab').data(flItems, d=>d.key)
     .join(enter=>{ const gg=enter.append('g').attr('class','flab').attr('transform',d=>`translate(${d.x},${d.y})`);
